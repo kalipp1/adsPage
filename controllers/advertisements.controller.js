@@ -1,8 +1,11 @@
 const Advertisements = require('../models/advertisements.model');
+const fs = require('fs');
+const path = require('path');
+const getImageFileType = require('../utils/getImageFileType');
 
 exports.getAll = async (req, res) => {
   try {
-    res.json(await Advertisements.find({}));
+    res.json(await Advertisements.find().populate({ path: 'seller', select: '-password' }));
   }
   catch(err) {
     res.status(500).json({ message: err });
@@ -12,7 +15,7 @@ exports.getAll = async (req, res) => {
 exports.getById = async (req, res) => {
 
     try {
-      const ad = await Advertisements.findById(req.params.id);
+      const ad = await Advertisements.findById(req.params.id).populate({ path: 'seller', select: '-password' });
       if(!ad) res.status(404).json({ message: 'Not found' });
       else res.json(ad);
     }
@@ -23,58 +26,120 @@ exports.getById = async (req, res) => {
 };
 
 exports.postAd = async (req, res) => {
-    try {
+  try {
+      const { title, content, price, location } = req.body;
+      const fileType = req.file ? await getImageFileType(req.file) : 'unknown';
 
-        const { title } = req.body;
-        const { content } = req.body;
-        const { publishDate } = req.body;
-        const { image } = req.body;
-        const { price } = req.body;
-        const { location } = req.body;
-        const { seller } = req.body;
-        const newAdvertisement = new Advertisements({ title: title, content: content, publishDate: publishDate, image: image, price: price, location: location, seller: seller });
-        await newAdvertisement.save();
-        res.json({ message: 'OK' });
-    
-      } catch(err) {
-        res.status(500).json({ message: err });
+      //console.log(title, description, price, location, fileType );
+
+      if (title && typeof title === 'string' && 
+          content && typeof content === 'string' &&
+          price && typeof price === 'string' && 
+          location && typeof location === 'string') {
+
+            if (!req.session.user.id) {
+              if (req.file) {
+                fs.unlinkSync(req.file.path)
+              }
+              return res.status(401).json({ message: 'You need to be logged in' });
+            }
+
+            if (!req.file || !['image/png', 'image/jpeg', 'image/gif'].includes(fileType)) {
+              if (req.file) {
+                  fs.unlinkSync(req.file.path)
+              }
+              return res.status(400).json({ message: 'Please upload an image file' });
+          }
+
+          const currentDate = new Date();
+
+          const newAd = new Advertisements(
+            { title: title, 
+              content: content, 
+              publishDate: currentDate, 
+              image: req.file.filename,
+              price: price, 
+              location: location, 
+              seller: req.session.user.id }); 
+
+          await newAd.save();
+          res.status(201).json({ message: 'New ad added successfully' + newAd.title });
+
+      } else {
+        if (req.file) {
+          fs.unlinkSync(req.file.path);
+        }
+        res.status(400).send({ message: 'Bad request ' });
       }
+
+    } catch(err) {
+      if (req.file) {
+        fs.unlinkSync(req.file.path);
+      }
+      res.status(500).json({ message: err.message });
+    }
 };
 
 exports.modifyAd = async (req, res) => {
-    const { title } = req.body;
-    const { content } = req.body;
-    const { publishDate } = req.body;
-    const { image } = req.body;
-    const { price } = req.body;
-    const { location } = req.body;
-    const { seller } = req.body;
+  const { title, content, price, location } = req.body;
+  const fileType = req.file ? await getImageFileType(req.file) : 'unknown';
 
-    try {
-      const ad = await Advertisements.findByIdAndUpdate(
-        req.params.id,
-        { $set: { title: title, content: content, publishDate: publishDate, image: image, price: price, location: location, seller: seller }},
-        { new: true }
-      );
-      if(ad) {
-        res.json(ad);
+  try {
+    const ad = await Advertisements.findById(req.params.id);
+
+    if (!ad) {
+      return res.status(404).json({ message: 'Ad not found' });
+    }
+
+    if (ad.seller.toString() !== req.session.user.id) {
+      return res.status(403).json({ message: 'You are not authorized to modify this ad' });
+    }
+
+    if (req.file && ['image/png', 'image/jpeg', 'image/gif'].includes(fileType)) {
+      if (ad.image) {
+        const oldImagePath = path.join(__dirname, '..', 'public', 'uploads', ad.image);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
       }
-      else res.status(404).json({ message: 'Not found...' });
+      ad.image = req.file.filename;
+    } else if (req.file) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ message: 'Invalid file type. Please upload a valid image.' });
     }
-    catch(err) {
-      res.status(500).json({ message: err });
-    }
+
+    ad.title = title || ad.title;
+    ad.content = content || ad.content;
+    ad.price = price || ad.price;
+    ad.location = location || ad.location;
+
+    const updatedAd = await ad.save();
+
+    res.status(200).json({ message: 'Ad updated successfully', ad: updatedAd });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
 };
 
 exports.deleteAd = async (req, res) => {
     try {
-        const ad = await Advertisements.findByIdAndDelete(req.params.id);
-        if(ad) {
-          res.json(ad);
+      const ad = await Advertisements.findById(req.params.id);
+        if (!ad) {
+            return res.status(404).json({ message: 'Not found...' });
         }
-        else res.status(404).json({ message: 'Not found...' });
-      }
-      catch(err) {
+
+        if (ad.image) {
+            const imagePath = path.join(__dirname, '..', 'public', 'uploads', ad.image);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
+
+        await ad.deleteOne();
+        res.json({ message: 'Ad deleted successfully' });
+      } catch(err) {
         res.status(500).json({ message: err });
       }
 };

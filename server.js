@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-// const path = require('path');
+const path = require('path');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
@@ -30,7 +30,6 @@ db.once('open', () => {
   });
 
   const advertisementsRoutes = require('./routes/advertisements.routes');
-  const usersRoutes = require('./routes/users.routes');
   const authRoutes = require('./routes/auth.routes');
 
   app.use(cors());
@@ -39,11 +38,10 @@ db.once('open', () => {
   app.use(session({ secret: 'xyz567', resave: false, saveUninitialized: false, store: MongoStore.create({ mongoUrl: dbURI, }), cookie: { secure: process.env.NODE_ENV == 'production', }, }));
 
   app.use('/api', advertisementsRoutes);
-  app.use('/api', usersRoutes);
   app.use('/api/auth', authRoutes);
 
-  // app.use(express.static(path.join(__dirname, "/client/build")));
-  // app.use(express.static(path.join(__dirname, "/public")));
+  app.use(express.static(path.join(__dirname, "/client/build")));
+  app.use(express.static(path.join(__dirname, "/public")));
 
   app.use((req, res) => {
     res.status(404).send({ message: 'Not found...' });

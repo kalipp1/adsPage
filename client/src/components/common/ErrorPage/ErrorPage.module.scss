@@ -1,0 +1,10 @@
+@import '../../../styles/settings.scss';
+
+.errorPage{
+    padding: $margin-padding;
+    text-align: center;
+    color: $color-error;
+    background-color: $color-amethyst-light;
+    border-radius: $radius * 4;
+    margin-inline: $margin-padding * 20;
+}

@@ -91,6 +91,7 @@ exports.modifyAd = async (req, res) => {
       return res.status(404).json({ message: 'Ad not found' });
     }
 
+    console.log(req.session);
     if (ad.seller.toString() !== req.session.user.id) {
       return res.status(403).json({ message: 'You are not authorized to modify this ad' });
     }
@@ -108,6 +109,7 @@ exports.modifyAd = async (req, res) => {
       return res.status(400).json({ message: 'Invalid file type. Please upload a valid image.' });
     }
 
+    console.log(title, content, price, location);
     ad.title = title || ad.title;
     ad.content = content || ad.content;
     ad.price = price || ad.price;

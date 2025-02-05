@@ -1,0 +1,61 @@
+@import '../../../styles/settings.scss';
+
+.buttonEdit {
+    color: $color-info !important;
+    width: 100px;
+    background-color: transparent !important;
+    border: 3px solid $color-violet !important;
+    margin-inline: $margin-padding;
+}
+.buttonEdit:hover {
+    background-color: $color-violet-lighter !important;
+    transition: $transition !important;
+}
+
+.buttonRemove {
+    color: $color-error !important;
+    width: 100px;
+    background-color: transparent !important;
+    border: 3px solid $color-violet !important;
+    margin-inline: $margin-padding;
+}
+.buttonRemove:hover {
+    background-color: $color-violet-lighter !important;
+    transition: $transition !important;
+}
+
+.yes {
+    background-color: $color-error !important;
+    margin-inline: $margin-padding;
+    width: 10vh;
+}
+
+.no {
+    background-color: $color-info !important;
+    margin-inline: $margin-padding;
+    width: 10vh;
+}
+
+.yes:hover {
+    background-color: $color-error-hover !important;
+    transition: $transition;
+}
+
+.no:hover {
+    background-color: $color-info-hover !important;
+    transition: $transition;
+}
+
+.button{
+    padding: 10px;
+    font-size: $base-size;
+    color: $color-white;
+    background-color: $color-violet;
+    border: none;
+    border-radius: $radius;
+}
+
+.button:hover{
+    background-color: $color-violet-lighter;
+    transition: $transition;
+}

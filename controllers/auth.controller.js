@@ -51,7 +51,12 @@ exports.login = async (req, res) => {
                         login: user.login,
                       };
                       
+                    var hour = 3600000
+                    req.session.cookie.expires = new Date(Date.now() + hour)
+                    req.session.cookie.maxAge = hour
+
                     req.session.user = userObject;
+                    req.session.save();
                     console.log(userObject);
                     res.status(200).send({ message: 'Login successful'});
                 }else{

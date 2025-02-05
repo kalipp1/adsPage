@@ -1,0 +1,17 @@
+@import '../../../styles/settings.scss';
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    background-color: $color-violet-lighter;
+    padding: 10px;
+    h1 {
+        font-size: $base-size;
+        color: $color-pink-white;
+    }
+    a {
+        font-size: $base-size * 1.5;
+        color: $color-pink-white;
+        text-decoration: none;
+    }
+}

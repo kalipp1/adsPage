@@ -1,0 +1,50 @@
+@import '../../../styles/settings.scss';
+
+h1{
+    letter-spacing: 2px;
+}
+.allAds{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.singleAd{
+    margin: 2vh;
+    padding: 2vh;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid $color-white;
+    border-radius: $radius * 3;
+    width: 30%;
+    justify-content: space-between;
+    background-color: $color-amethyst-light;
+    .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+    .adTitle{
+        width: 100%;
+        text-align: center;
+    }
+    .info{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 1vh;
+        height: 150px;
+        .adImage {
+            margin-left: 2vh;
+            width: 150px;
+            height: 120px;
+            // object-fit: cover;
+        }
+        .adLocation {
+            margin-right: 5vh;
+            margin-left: auto; 
+            text-align: right;
+            width: 10%;
+        }
+    }
+}

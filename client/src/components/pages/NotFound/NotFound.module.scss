@@ -1,0 +1,12 @@
+@import '../../../styles/settings.scss';
+
+.notFound {
+    margin-top: $margin-padding * 3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.image {
+    width: 800px;
+    height: 400px;
+}
